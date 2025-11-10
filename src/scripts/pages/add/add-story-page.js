@@ -19,7 +19,6 @@ const AddStoryPage = {
           <a href="/#" class="back-link">← Kembali ke Beranda</a>
           
           <form id="addStoryForm">
-            <!-- Deskripsi -->
             <div class="form-group">
               <label for="description">Deskripsi</label>
               <textarea 
@@ -31,7 +30,6 @@ const AddStoryPage = {
               ></textarea>
             </div>
 
-            <!-- Upload Foto -->
             <div class="form-group">
               <label for="photo">Foto</label>
               <div class="photo-input-container">
@@ -48,7 +46,6 @@ const AddStoryPage = {
               <div id="photoPreview" class="photo-preview"></div>
             </div>
 
-            <!-- Lokasi -->
             <div class="form-group">
               <label style="display: flex; align-items: center; gap: 8px;">
                 <input type="checkbox" id="useLocation" style="width: auto;" />
@@ -73,14 +70,27 @@ const AddStoryPage = {
     const user = JSON.parse(localStorage.getItem("user"));
     this.presenter = new StoryPresenter(this);
 
-    // === Kamera ===
+    // === Ambil Elemen ===
     const openCameraBtn = document.getElementById("openCameraBtn");
     const closeCameraBtn = document.getElementById("closeCameraBtn");
     const video = document.getElementById("cameraStream");
     const capturePhotoBtn = document.getElementById("capturePhotoBtn");
     const cameraContainer = document.getElementById("cameraContainer");
     const photoPreview = document.getElementById("photoPreview");
+    const useLocation = document.getElementById("useLocation");
+    const locationMapContainer = document.getElementById(
+      "locationMapContainer"
+    );
+    const locationInfo = document.getElementById("locationInfo");
+    const form = document.getElementById("addStoryForm");
 
+    if (form.dataset.listenerAttached) {
+      return;
+    }
+
+    form.dataset.listenerAttached = "true";
+
+    // === Logika Kamera ===
     let stream = null;
     this.capturedBlob = null;
 
@@ -120,12 +130,7 @@ const AddStoryPage = {
       }, "image/jpeg");
     });
 
-    // === Lokasi ===
-    const useLocation = document.getElementById("useLocation");
-    const locationMapContainer = document.getElementById(
-      "locationMapContainer"
-    );
-    const locationInfo = document.getElementById("locationInfo");
+    // === Logika Lokasi ===
     let map, marker;
     this.selectedLocation = null;
 
@@ -156,8 +161,7 @@ const AddStoryPage = {
       }
     });
 
-    // === Submit Cerita ===
-    const form = document.getElementById("addStoryForm");
+    // === Logika Submit Cerita ===
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const description = document.getElementById("description").value.trim();

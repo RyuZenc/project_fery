@@ -1,11 +1,12 @@
 /*  SERVICE WORKER — Dicoding Story  */
 
-const CACHE_NAME = "dicoding-story-cache-v2";
+const CACHE_NAME = "dicoding-story-cache-v1";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
-  "/styles/styles.css",
   "/manifest.json",
+  "/app.bundle.js",
+  "/app.css",
   "/images/icon-192.png",
   "/images/icon-512.png",
 ];
