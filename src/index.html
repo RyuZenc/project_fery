@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dicoding Stories</title>
+    <link rel="manifest" href="/manifest.json" />
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+    <header class="navbar">
+      <div class="container navbar-container">
+        <a href="#/" class="brand">📖 Dicoding Stories</a>
+
+        <!-- NAV LINKS -->
+        <nav class="nav-links">
+          <a href="#/" class="nav-home">🏠 Home</a>
+          <a href="#/add" class="nav-add">➕ Add Story</a>
+          <a href="#/about" class="nav-about">ℹ️ About</a>
+          <a href="#/map" class="nav-map">🗺️ Map</a>
+          <button id="subscribeBtn" class="nav-button">
+            Aktifkan Notifikasi
+          </button>
+          <button id="unsubscribeBtn" class="nav-button" style="display: none">
+            Nonaktifkan Notifikasi
+          </button>
+        </nav>
+
+        <div class="auth-buttons">
+          <button id="loginBtn" class="btn-login">Login</button>
+          <button id="logoutBtn" class="btn-logout" style="display: none">
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content" class="main-content container">
+      <div id="app"></div>
+    </main>
+
+    <!-- Script bundle Webpack -->
+    <script type="module" src="app.bundle.js"></script>
+  </body>
+</html>

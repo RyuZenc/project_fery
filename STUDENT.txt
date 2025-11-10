@@ -1,0 +1,2 @@
+APP_URL=https://luxion70.github.io/story-app/
+MAP_SERVICE_API_KEY=<api_key>
