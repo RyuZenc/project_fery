@@ -51,6 +51,10 @@ export const IdbStories = {
     return (await dbPromise).add(PENDING_STORE_NAME, story);
   },
 
+  async deletePendingStory(tempId) {
+    return (await dbPromise).delete(PENDING_STORE_NAME, tempId);
+  },
+
   async clearPending() {
     const db = await dbPromise;
     const tx = db.transaction(PENDING_STORE_NAME, "readwrite");

@@ -1,9 +1,11 @@
+// src/scripts/index.js (FULL FIX)
+
 import "../styles/styles.css";
 import App from "./pages/app";
 import {
   subscribeUser,
   unsubscribeUser,
-  checkSubscribed, // ✅ ubah dari checkSubscribed → checkSubscription
+  checkSubscribed,
 } from "./utils/pushManager";
 import { IdbStories } from "./data/idb";
 
@@ -41,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 🔹 Service Worker + Push Notifications
   if ("serviceWorker" in navigator) {
     await navigator.serviceWorker.register("/service-worker.js");
-    const subscribed = await checkSubscribed(); // ✅ update di sini
+    const subscribed = await checkSubscribed();
 
     if (subscribeBtn)
       subscribeBtn.style.display = subscribed ? "none" : "inline-block";
@@ -82,17 +84,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 🔹 Offline Sync
-  // Tambahkan flag global di atas event listener
   let isSyncing = false;
 
-  window.addEventListener("online", async () => {
-    if (isSyncing) return; // ⛔ kalau sedang sync, abaikan event berikutnya
+  /**
+   * Fungsi untuk menyinkronkan cerita yang tertunda dari IndexedDB ke server.
+   */
+  async function syncOfflineStories() {
+    if (isSyncing) return; // ⛔ Mencegah sync ganda jika event terpicu berdekatan
     isSyncing = true;
 
     const pending = await IdbStories.getPending();
     const user = getUser();
 
     if (pending.length > 0 && user?.token) {
+      console.log(`Syncing ${pending.length} pending stories...`);
+      let successCount = 0;
+
       for (const item of pending) {
         try {
           // Ubah base64 jadi Blob
@@ -114,21 +121,37 @@ document.addEventListener("DOMContentLoaded", async () => {
             body: formData,
           });
 
-          if (!res.ok) {
-            console.warn("⚠️ Gagal upload cerita:", await res.text());
+          if (res.ok) {
+            // ✅ BERHASIL: Hapus item spesifik ini dari antrean IndexedDB
+            await IdbStories.deletePendingStory(item.tempId);
+            successCount++;
+          } else {
+            // ⚠️ GAGAL (Server Error): Jangan hapus, biarkan di antrean
+            console.warn(`⚠️ Gagal upload cerita (ID: ${item.tempId}):`, await res.text());
           }
         } catch (err) {
-          console.error("❌ Error sync cerita offline:", err);
+          // ❌ GAGAL (Network Error): Jangan hapus, biarkan di antrean
+          console.error(`❌ Error sync cerita offline (ID: ${item.tempId}):`, err);
         }
-      }
+      } // Loop berakhir
 
-      await IdbStories.clearPending();
-      alert("📤 Cerita offline berhasil disinkronkan!");
-      await app.renderPage();
+      if (successCount > 0) {
+        alert(`📤 ${successCount} cerita offline berhasil disinkronkan!`);
+        await app.renderPage(); // "Refresh sendiri" setelah ada yang sukses
+      }
     }
 
     isSyncing = false;
-  });
+  }
+
+  // 1. Pasang listener untuk saat KEMBALI online
+  window.addEventListener("online", syncOfflineStories);
+
+  // 2. Coba sync saat HALAMAN DIMUAT (jika sudah online)
+  // Ini penting untuk menangani kasus interupsi/refresh.
+  if (navigator.onLine) {
+    await syncOfflineStories();
+  }
 
   // 🔹 Render halaman awal & update tombol
   updateAuthButtons();
