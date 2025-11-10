@@ -4,9 +4,11 @@ const CACHE_NAME = "dicoding-story-cache-v1";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
-  "/styles/styles.css",
+  "/app.bundle.js",
+  "/app.css",
   "/images/icon-192.png",
   "/images/icon-512.png",
+  "/manifest.json",
 ];
 
 // 📦 INSTALL — Caching awal
