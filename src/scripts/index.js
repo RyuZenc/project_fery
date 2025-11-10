@@ -1,5 +1,3 @@
-// src/scripts/index.js (FULL FIX)
-
 import "../styles/styles.css";
 import App from "./pages/app";
 import {
@@ -43,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 🔹 Service Worker + Push Notifications
   if ("serviceWorker" in navigator) {
     await navigator.serviceWorker.register("/service-worker.js");
-    const subscribed = await checkSubscribed();
+    const subscribed = await checkSubscribed(); // ✅ update di sini
 
     if (subscribeBtn)
       subscribeBtn.style.display = subscribed ? "none" : "inline-block";
@@ -88,6 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /**
    * Fungsi untuk menyinkronkan cerita yang tertunda dari IndexedDB ke server.
+   * Ini dibuat "atomik": menghapus item HANYA SETELAH berhasil di-upload.
    */
   async function syncOfflineStories() {
     if (isSyncing) return; // ⛔ Mencegah sync ganda jika event terpicu berdekatan
@@ -97,7 +96,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const user = getUser();
 
     if (pending.length > 0 && user?.token) {
-      console.log(`Syncing ${pending.length} pending stories...`);
+      console.log(`Syncing ${pending.length} pending stories...`); // Log akan muncul 1x
       let successCount = 0;
 
       for (const item of pending) {
@@ -140,17 +139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await app.renderPage(); // "Refresh sendiri" setelah ada yang sukses
       }
     }
-
     isSyncing = false;
-  }
-
-  // 1. Pasang listener untuk saat KEMBALI online
-  window.addEventListener("online", syncOfflineStories);
-
-  // 2. Coba sync saat HALAMAN DIMUAT (jika sudah online)
-  // Ini penting untuk menangani kasus interupsi/refresh.
-  if (navigator.onLine) {
-    await syncOfflineStories();
   }
 
   // 🔹 Render halaman awal & update tombol
@@ -180,4 +169,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
   });
+
+  if (navigator.onLine) {
+    await syncOfflineStories();
+  }
+
+  window.addEventListener("online", syncOfflineStories);
 });
