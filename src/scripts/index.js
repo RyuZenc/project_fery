@@ -1,3 +1,5 @@
+// src/scripts/index.js (FULL FIX)
+
 import "../styles/styles.css";
 import App from "./pages/app";
 import {
@@ -6,6 +8,8 @@ import {
   checkSubscribed,
 } from "./utils/pushManager";
 import { IdbStories } from "./data/idb";
+
+// Pastikan IdbStories di idb.js sudah memiliki "deletePendingStory"
 
 function getUser() {
   const data = localStorage.getItem("user");
@@ -41,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 🔹 Service Worker + Push Notifications
   if ("serviceWorker" in navigator) {
     await navigator.serviceWorker.register("/service-worker.js");
-    const subscribed = await checkSubscribed(); // ✅ update di sini
+    const subscribed = await checkSubscribed();
 
     if (subscribeBtn)
       subscribeBtn.style.display = subscribed ? "none" : "inline-block";
@@ -82,21 +86,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 🔹 Offline Sync
-  let isSyncing = false;
-
-  /**
-   * Fungsi untuk menyinkronkan cerita yang tertunda dari IndexedDB ke server.
-   * Ini dibuat "atomik": menghapus item HANYA SETELAH berhasil di-upload.
-   */
   async function syncOfflineStories() {
-    if (isSyncing) return; // ⛔ Mencegah sync ganda jika event terpicu berdekatan
-    isSyncing = true;
+    // Gunakan flag global untuk MENCEGAH duplikasi jika skrip dimuat dua kali
+    if (window.isSyncing) return;
+    window.isSyncing = true;
 
     const pending = await IdbStories.getPending();
     const user = getUser();
 
     if (pending.length > 0 && user?.token) {
-      console.log(`Syncing ${pending.length} pending stories...`); // Log akan muncul 1x
+      console.log(`Syncing ${pending.length} pending stories...`);
       let successCount = 0;
 
       for (const item of pending) {
@@ -139,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await app.renderPage(); // "Refresh sendiri" setelah ada yang sukses
       }
     }
-    isSyncing = false;
+    window.isSyncing = false;
   }
 
   // 🔹 Render halaman awal & update tombol
